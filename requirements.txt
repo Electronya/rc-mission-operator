@@ -1,0 +1,7 @@
+# Dev dependencies
+pytest==6.2.2
+coverage==5.4
+rope==0.18.0
+
+# App dependencies
+pigpio==1.78
