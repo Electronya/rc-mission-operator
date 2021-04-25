@@ -39,12 +39,11 @@ class ControlDevice:
         if gpio != self.CHANNEL_0 and gpio != self.CHANNEL_1:
             raise Exception(f"{self.GPIO_UNSABLE_ERR_MSG1}{gpio}{self.GPIO_UNSABLE_ERR_MSG2}")
 
-        period = 1 / frequency * 1e3
         self._type = type
         self._freq = frequency
-        self._min_pulse = int(round(self.FULL_DUTY * (min_pulse / period)))
-        self._max_pulse = int(round(self.FULL_DUTY * (max_pulse / period)))
-        self._neutral = int(round(self.FULL_DUTY * (neutral / period)))
+        self._min_pulse = self._pulse_length_to_duty(min_pulse, self._freq)
+        self._max_pulse = self._pulse_length_to_duty(max_pulse, self._freq)
+        self._neutral = self._pulse_length_to_duty(neutral, self._freq)
         self._range_min = self._neutral - self._min_pulse
         self._range_max = self._max_pulse - self._neutral
         self._modifier = 0.0
@@ -71,6 +70,20 @@ class ControlDevice:
         logging.info(f"  - min pulse: {self._min_pulse}")
         logging.info(f"  - max pluse: {self._max_pulse}")
         logging.info(f"  - neutral: {self._neutral}")
+
+    def _pulse_length_to_duty(self, pulse_length, frequency):
+        """
+        Convert a pulse length in ms to duty cycle in 1000000th.
+
+        Params:
+            pulse_length:   The pulse length in ms to convert.
+            frequency:      The PWM frequency.
+
+        Return:
+            The duty cycle in 1000000th.
+        """
+        period = 1 / frequency * 1e3
+        return int(round(self.FULL_DUTY * (pulse_length / period)))
 
     def _init_sequence(self):
         """
