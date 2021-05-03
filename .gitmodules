@@ -1,0 +1,3 @@
+[submodule "rc-mission-common"]
+	path = rc-mission-common
+	url = git@github.com:Electronya/rc-mission-common.git
