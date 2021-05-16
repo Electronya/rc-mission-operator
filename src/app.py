@@ -2,6 +2,7 @@ import logging
 import sys
 
 from control_device import ControlDevice
+from client import Client
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -28,13 +29,15 @@ class App:
         """
         Constructor.
         """
-        self.steering = ControlDevice(self.STEERING_TYPE, self.STEERING_GPIO,
+        self._steering = ControlDevice(self.STEERING_TYPE, self.STEERING_GPIO,
             self.STEERING_FREQ, self.STEERING_MIN, self.STEERING_MAX,
             self.STEERING_NEUTRAL)
 
-        self.throttle = ControlDevice(self.THROTTLE_TYPE, self.THROTTLE_GPIO,
+        self._throttle = ControlDevice(self.THROTTLE_TYPE, self.THROTTLE_GPIO,
             self.THROTTLE_FREQ, self.THROTTLE_MIN, self.THROTTLE_MAX,
             self.THROTTLE_NEUTRAL)
+
+        self._client = Client('12345')
 
     def run(self):
         """
@@ -49,8 +52,9 @@ class App:
         Stop the application.
         """
         logging.info('stopping RC control mission operator')
-        self.steering.stop_pulse()
-        self.throttle.stop_pulse()
+        self._steering.stop_pulse()
+        self._throttle.stop_pulse()
+        self._client.disconnect()
 
 if __name__ == '__main__':
     app = App()
