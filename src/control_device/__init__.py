@@ -15,8 +15,8 @@ class ControlDevice:
     FULL_DUTY = 1000000
 
     UNSUPPORTED_DEV_ERR_MSG = 'Unsupported device type.'
-    GPIO_UNSABLE_ERR_MSG1 = 'Unable to used gpio: '
-    GPIO_UNSABLE_ERR_MSG2 = 'as PWM channel.'
+    GPIO_UNABLE_ERR_MSG1 = 'Unable to used gpio: '
+    GPIO_UNABLE_ERR_MSG2 = 'as PWM channel.'
     CONNECTION_ERR_MSG = 'Unable to connected to PIGPIO service.'
     PWM_OP_FAILED_MSG = 'PWM operation failed, err: '
 
@@ -37,7 +37,7 @@ class ControlDevice:
             raise Exception(self.UNSUPPORTED_DEV_ERR_MSG)
 
         if gpio != self.CHANNEL_0 and gpio != self.CHANNEL_1:
-            raise Exception(f"{self.GPIO_UNSABLE_ERR_MSG1}{gpio}{self.GPIO_UNSABLE_ERR_MSG2}")
+            raise Exception(f"{self.GPIO_UNABLE_ERR_MSG1}{gpio}{self.GPIO_UNABLE_ERR_MSG2}")
 
         self._type = type
         self._freq = frequency
