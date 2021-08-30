@@ -6,6 +6,7 @@ from client import Client
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 class App:
     """
     RC Mission Operator application.
@@ -30,12 +31,12 @@ class App:
         Constructor.
         """
         self._steering = ControlDevice(self.STEERING_TYPE, self.STEERING_GPIO,
-            self.STEERING_FREQ, self.STEERING_MIN, self.STEERING_MAX,
-            self.STEERING_NEUTRAL)
+                                       self.STEERING_FREQ, self.STEERING_MIN,
+                                       self.STEERING_MAX,  self.STEERING_NEUTRAL)   # noqa: E501
 
         self._throttle = ControlDevice(self.THROTTLE_TYPE, self.THROTTLE_GPIO,
-            self.THROTTLE_FREQ, self.THROTTLE_MIN, self.THROTTLE_MAX,
-            self.THROTTLE_NEUTRAL)
+                                       self.THROTTLE_FREQ, self.THROTTLE_MIN,
+                                       self.THROTTLE_MAX,  self.THROTTLE_NEUTRAL)   # noqa: E501
 
         self._client = Client('12345')
 
@@ -55,6 +56,7 @@ class App:
         self._steering.stop_pulse()
         self._throttle.stop_pulse()
         self._client.disconnect()
+
 
 if __name__ == '__main__':
     app = App()
