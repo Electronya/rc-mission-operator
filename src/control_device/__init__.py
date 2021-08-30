@@ -3,11 +3,11 @@ import time
 
 import pigpio
 
+
 class ControlDevice:
     """
     RC control device base class.
     """
-
     CHANNEL_0 = 12
     CHANNEL_1 = 13
     TYPE_SERVO = 0
@@ -21,7 +21,7 @@ class ControlDevice:
     PWM_OP_FAILED_MSG = 'PWM operation failed, err: '
 
     def __init__(self, type=0, gpio=12, frequency=90,
-        min_pulse=1.0, max_pulse=2, neutral=1.5):
+                 min_pulse=1.0, max_pulse=2, neutral=1.5):
         """
         Constructor.
 
@@ -37,7 +37,8 @@ class ControlDevice:
             raise Exception(self.UNSUPPORTED_DEV_ERR_MSG)
 
         if gpio != self.CHANNEL_0 and gpio != self.CHANNEL_1:
-            raise Exception(f"{self.GPIO_UNABLE_ERR_MSG1}{gpio}{self.GPIO_UNABLE_ERR_MSG2}")
+            raise Exception(f"{self.GPIO_UNABLE_ERR_MSG1}"
+                            f"{gpio}{self.GPIO_UNABLE_ERR_MSG2}")
 
         self._type = type
         self._freq = frequency
@@ -91,14 +92,14 @@ class ControlDevice:
         """
         if self._type == self.TYPE_ESC:
             rc = self._gpio_client.hardware_PWM(self._gpio, self._freq,
-                self.FULL_DUTY)
+                                                self.FULL_DUTY)
             if rc != 0:
                 raise Exception(f"{self.PWM_OP_FAILED_MSG}{rc}")
 
             time.sleep(1.4)
 
         rc = self._gpio_client.hardware_PWM(self._gpio, self._freq,
-            self._neutral)
+                                            self._neutral)
         if rc != 0:
             raise Exception(f"{self.PWM_OP_FAILED_MSG}{rc}")
 

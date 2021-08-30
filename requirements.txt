@@ -2,7 +2,8 @@
 pytest==6.2.2
 coverage==5.4
 rope==0.18.0
+flake8==3.9.2
 
 # App dependencies
 paho-mqtt==1.5.1
-pigpio==1.78
+

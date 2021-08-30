@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 
 from .messages import UnitConnectionState
 
+
 class Client(mqtt.Client):
     """
     The mission commander mqtt client class.
@@ -19,9 +20,13 @@ class Client(mqtt.Client):
         """
         logging.debug('initializing mqtt client')
         super().__init__(client_id=self.CLIENT_ID, transport='tcp')
-        stateMsgPayload = {UnitConnectionState.STATE_KEY: UnitConnectionState.OFFLINE_STATE}
-        self._stateMsg = UnitConnectionState(unit=self.CLIENT_ID, payload=stateMsgPayload)
-        self.will_set(self._stateMsg.get_topic(), self._stateMsg.to_json(), qos=self._stateMsg.get_qos(), retain=True)
+        stateMsgPayload = \
+            {UnitConnectionState.STATE_KEY: UnitConnectionState.OFFLINE_STATE}
+        self._stateMsg = \
+            UnitConnectionState(unit=self.CLIENT_ID, payload=stateMsgPayload)
+        self.will_set(self._stateMsg.get_topic(),
+                      self._stateMsg.to_json(),
+                      qos=self._stateMsg.get_qos(), retain=True)
         self.username_pw_set(self.CLIENT_ID, password)
 
         logging.info('trying to connect to mission broker')
@@ -39,9 +44,12 @@ class Client(mqtt.Client):
             rc:             The connection results.
         """
         logging.info('connected to mission broker.')
-        payload = {UnitConnectionState.STATE_KEY: UnitConnectionState.ONLINE_STATE}
+        payload = \
+            {UnitConnectionState.STATE_KEY: UnitConnectionState.ONLINE_STATE}
         self._stateMsg.set_payload(payload)
-        self.publish(self._stateMsg.get_topic(), self._stateMsg.to_json(), qos=self._stateMsg.get_qos(), retain=True)
+        self.publish(self._stateMsg.get_topic(),
+                     self._stateMsg.to_json(),
+                     qos=self._stateMsg.get_qos(), retain=True)
 
     def on_disconnect(self, client, usrData, rc):
         """
@@ -89,14 +97,18 @@ class Client(mqtt.Client):
             mid:            The message ID.
             granted_qos:    The granted quality of service.
         """
-        logging.debug(f"subscription done with mid: {mid}; and qos: {granted_qos}")
+        logging.debug(f"subscription done with mid: "
+                      f"{mid}; and qos: {granted_qos}")
 
     def disconnect(self):
         """
         Disconnect the client from the broker.
         """
         logging.info('disconnecting from mission broker.')
-        payload = {UnitConnectionState.STATE_KEY: UnitConnectionState.OFFLINE_STATE}
+        payload = \
+            {UnitConnectionState.STATE_KEY: UnitConnectionState.OFFLINE_STATE}
         self._stateMsg.set_payload(payload)
-        self.publish(self._stateMsg.get_topic(), self._stateMsg.to_json(), self._stateMsg.get_qos(), retain=True)
+        self.publish(self._stateMsg.get_topic(),
+                     self._stateMsg.to_json(),
+                     self._stateMsg.get_qos(), retain=True)
         super().disconnect()
