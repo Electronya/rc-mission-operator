@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from control_device import ControlDevice
+from controlDevice import ControlDevice
 from client import Client
 
 logging.basicConfig(level=logging.DEBUG)
