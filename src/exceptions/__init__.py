@@ -28,14 +28,29 @@ class ControlDeviceMotionRangeInvalid(Exception):
     """
     The control device motion range exception.
     """
-    def __init__(self, pos, min, max):
+    def __init__(self, element: str, range: tuple):
         """
         Constructor.
 
         Params:
-            pos:        The requested position.
-            min:        The minimal position accepted.
-            max:        The maximal position accepted.
+            element:    The element that is not valid.
+            range:      The invalid range.
+        """
+        super().__init__(f"{element} in range: {range} is not valid.")
+
+
+class ContrelDevicePositionRange(Exception):
+    """
+    The control device position out of range exception.
+    """
+    def __init__(self, pos: int, min: int, max: int):
+        """
+        Contructor.
+
+        Params:
+            pos:    The unvalid position.
+            min:    The minimal position accepted.
+            max:    The maximal position accepted.
         """
         super().__init__(f"position {pos} is not included "
                          f"between {min} and {max}")

@@ -1,5 +1,7 @@
 from adafruit_servokit import ServoKit
-from exceptions import ControlDeviceMotionRangeInvalid, ControlDeviceType, \
+from exceptions import ContrelDevicePositionRange, \
+    ControlDeviceMotionRangeInvalid, \
+    ControlDeviceType, \
     ServoKitUninitialized
 
 
@@ -66,25 +68,56 @@ class ControlDevice:
         """
         minPos, center, maxPos = motionRange
         if minPos < self.MIN_ROTATION or minPos >= maxPos:
-            raise ControlDeviceMotionRangeInvalid(minPos,
-                                                  self.MIN_ROTATION,
-                                                  self.MAX_ROTATION)
+            raise ControlDeviceMotionRangeInvalid('min', motionRange)
         if maxPos > self.MAX_ROTATION or maxPos <= minPos:
-            raise ControlDeviceMotionRangeInvalid(maxPos,
-                                                  self.MIN_ROTATION,
-                                                  self.MAX_ROTATION)
+            raise ControlDeviceMotionRangeInvalid('max', motionRange)
         if center <= minPos or center >= maxPos:
-            raise ControlDeviceMotionRangeInvalid(center, minPos, maxPos)
+            raise ControlDeviceMotionRangeInvalid('center', motionRange)
 
-    def _validatePosition(self, position: int,
-                          posRange=(MIN_ROTATION, MAX_ROTATION)) -> None:
+    def _validatePosition(self, position: int) -> None:
         """
-        Check if a position is valid.
+        Check if a position is valid. min >= position >= max.
 
         Params:
             position:   The position to validate.
-            posRange:   The range used for validation.
         """
-        minPos, maxPos = posRange
-        if position < minPos or position > maxPos:
-            raise ControlDeviceMotionRangeInvalid(position, minPos, maxPos)
+        if position < self._min or position > self._max:
+            raise ContrelDevicePositionRange(position, self._min, self._max)
+
+    def setMotionRange(self, motionRange: tuple) -> None:
+        """
+        Set the device motion range.
+
+        Params:
+            motionRange:    The new motion range.
+        """
+        self._validateMotionRange(motionRange)
+        self._min, self._center, self._max = motionRange
+
+    def getMotionRange(self) -> tuple:
+        """
+        Get the current motion range.
+
+        Return:
+            The current motion range.
+        """
+        return (self._min, self._center, self._max)
+
+    def setPosition(self, pos: int) -> None:
+        """
+        Set a new position.
+
+        Params:
+            pos:    The new position.
+        """
+        self._validatePosition(pos)
+        self.servos[self.CHANNELS[self._type]].angle = pos
+
+    def getPosition(self) -> int:
+        """
+        Get the current position.
+
+        Return
+            The current position.
+        """
+        return self.servos[self.CHANNELS[self._type]].angle

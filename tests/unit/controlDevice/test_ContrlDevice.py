@@ -11,7 +11,7 @@ sys.modules['adafruit_servokit'] = mockedServoKit
 
 from controlDevice import ControlDevice           # noqa: E402
 from exceptions import ServoKitUninitialized, ControlDeviceType, \
-    ControlDeviceMotionRangeInvalid  # noqa: E402
+    ControlDeviceMotionRangeInvalid, ContrelDevicePositionRange  # noqa: E402
 
 
 class TestControlDevice(TestCase):
@@ -186,23 +186,70 @@ class TestControlDevice(TestCase):
     def test_validatePosition(self):
         """
         The _validatePosition method must raise a ControlDevicePositionRange
-        exception only if the tested position is out of the min/max range.
+        exception only if the tested position is out of the device
+        min/max range.
         """
-        testRange = (ControlDevice.MIN_ROTATION, ControlDevice.MAX_ROTATION)
         nonValidValues = [ControlDevice.MIN_ROTATION - 1,
                           ControlDevice.MAX_ROTATION + 1]
         validValues = [ControlDevice.MIN_ROTATION,
                        ControlDevice.MAX_ROTATION,
                        ControlDevice.DEFAULT_CENTER]
         for nonValidValue in nonValidValues:
-            with self.assertRaises(ControlDeviceMotionRangeInvalid) as context:
-                self.ctrlDev._validatePosition(nonValidValue, testRange)
+            with self.assertRaises(ContrelDevicePositionRange) as context:
+                self.ctrlDev._validatePosition(nonValidValue)
                 self.assertTrue(isinstance(context.exception,
-                                ControlDeviceMotionRangeInvalid))
+                                ContrelDevicePositionRange))
         for validValue in validValues:
             try:
-                self.ctrlDev._validatePosition(validValue, testRange)
-            except ControlDeviceMotionRangeInvalid:
+                self.ctrlDev._validatePosition(validValue)
+            except Exception:
                 self.fail('The DeviceControl _validatePosition failed to '
                           'raise an exception only if the position is out '
                           'of range.')
+
+    def test_setMotionRangeValidate(self):
+        """
+        The setMotionRange method must validate the new motion range.
+        """
+        testRange = (10, 50, 90)
+        with patch.object(self.ctrlDev, '_validateMotionRange') \
+                as mockedValMotionRange:
+            self.ctrlDev.setMotionRange(testRange)
+            mockedValMotionRange.assert_called_once_with(testRange)
+
+    def test_getMotionRange(self):
+        """
+        The getMotionRange method must return the current motion range.
+        """
+        testRange = (10, 50, 90)
+        self.ctrlDev.setMotionRange(testRange)
+        testResult = self.ctrlDev.getMotionRange()
+        self.assertEqual(testResult, testRange)
+
+    def test_setPositionValidate(self):
+        """
+        The setPosition method must validate the new position.
+        """
+        testPositon = 100
+        with patch.object(self.ctrlDev, '_validatePosition') \
+                as mockedValPosition:
+            self.ctrlDev.setPosition(testPositon)
+            mockedValPosition.assert_called_once_with(testPositon)
+
+    def test_setPositionUpdateServo(self):
+        """
+        The setPosition method must update the servo position.
+        """
+        testPositon = 100
+        self.ctrlDev.setPosition(testPositon)
+        testResult = self.ctrlDev.servos[ControlDevice.CHANNELS[ControlDevice.TYPE_SERVO]].angle      # noqa: E501
+        self.assertEqual(testResult, testPositon)
+
+    def test_getPositon(self):
+        """
+        The getPosition method must return the current position.
+        """
+        testPosition = 100
+        self.ctrlDev.setPosition(testPosition)
+        testResult = self.ctrlDev.getPosition()
+        self.assertEqual(testResult, testPosition)
