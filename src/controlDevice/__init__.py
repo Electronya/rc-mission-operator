@@ -36,24 +36,26 @@ class ControlDevice:
         """
         cls.servos = ServoKit(channels=chanCount, frequency=frequency)
 
-    def __init__(self, type='servo', motionRange=(MIN_ROTATION,
-                                                  DEFAULT_CENTER,
-                                                  MAX_ROTATION)):
+    def __init__(self, servoType='servo', motionRange=(MIN_ROTATION,
+                                                       DEFAULT_CENTER,
+                                                       MAX_ROTATION)):
         """
         Constructor.
 
         Params:
-            type:           The type of device (servo or ESC). Default servo.
+            servoType:      The type of device (servo or ESC). Default servo.
             motionRange:    The motion range of the device.
                             Default: (0, 90, 180).
         """
         if self.servos is None:
             raise ServoKitUninitialized()
-        if type != self.TYPE_SERVO and type != self.TYPE_ESC:
-            raise ControlDeviceType(type)
+        if servoType != self.TYPE_SERVO and servoType != self.TYPE_ESC:
+            raise ControlDeviceType(servoType)
 
         self._validateMotionRange(motionRange)
+        self._type = servoType
         self._min, self._center, self._max = motionRange
+        self.servos[self.CHANNELS[self._type]].angle = self._center
 
     def _validateMotionRange(self, motionRange: tuple) -> None:
         """
