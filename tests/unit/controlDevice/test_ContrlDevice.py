@@ -27,7 +27,7 @@ class TestControlDevice(TestCase):
         mockedServoKit.ServoKit.return_value = \
             [self.mockedServo, self.mockedEsc]
         ControlDevice.initServoKit()
-        self.ctrlDev = ControlDevice()
+        self.ctrlDev = ControlDevice(logging)
 
     def test_initServoKit(self):
         """
@@ -53,7 +53,7 @@ class TestControlDevice(TestCase):
         """
         ControlDevice.servos = None
         with self.assertRaises(ServoKitUninitialized) as context:
-            ctlrDev = ControlDevice()                   # noqa: F841
+            ctlrDev = ControlDevice(logging)                   # noqa: F841
             self.assertTrue(isinstance(context.exception,
                                        ServoKitUninitialized))
 
@@ -64,7 +64,7 @@ class TestControlDevice(TestCase):
         """
         devType = 'PROUT'
         with self.assertRaises(ControlDeviceType) as context:
-            ctlrDev = ControlDevice(servoType=devType)       # noqa: F841
+            ctlrDev = ControlDevice(logging, servoType=devType)  # noqa: F841
             self.assertTrue(isinstance(context.exception, ControlDeviceType))
 
     def test_constructorMotionRange(self):
@@ -76,14 +76,14 @@ class TestControlDevice(TestCase):
                     ControlDevice.MAX_ROTATION)
         with patch.object(ControlDevice, '_validateMotionRange') \
                 as mockedValidateMotion:
-            ctlrDev = ControlDevice()       # noqa: F841
+            ctlrDev = ControlDevice(logging)       # noqa: F841
             mockedValidateMotion.assert_called_once_with(expected)
 
     def test_contructorCenter(self):
         """
         The constructor must center the servo.
         """
-        ctrlDev = ControlDevice(servoType=ControlDevice.TYPE_ESC)
+        ctrlDev = ControlDevice(logging, servoType=ControlDevice.TYPE_ESC)
         self.assertEqual(self.mockedEsc.angle,
                          ctrlDev.DEFAULT_CENTER)
 

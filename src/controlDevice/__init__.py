@@ -39,7 +39,7 @@ class ControlDevice:
         cls.servos = ServoKit(channels=chanCount, frequency=frequency)
 
     def __init__(self, logger: object,
-                 servoType: str = 'servo',
+                 servoType: str = TYPE_DIRECT,
                  motionRange: tuple = (MIN_ROTATION,
                                        DEFAULT_CENTER,
                                        MAX_ROTATION)):
