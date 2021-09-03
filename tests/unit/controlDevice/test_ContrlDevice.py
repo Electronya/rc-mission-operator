@@ -242,7 +242,7 @@ class TestControlDevice(TestCase):
         """
         testPositon = 100
         self.ctrlDev.setPosition(testPositon)
-        testResult = self.ctrlDev.servos[ControlDevice.CHANNELS[ControlDevice.TYPE_SERVO]].angle      # noqa: E501
+        testResult = self.ctrlDev.servos[ControlDevice.CHANNELS[ControlDevice.TYPE_DIRECT]].angle      # noqa: E501
         self.assertEqual(testResult, testPositon)
 
     def test_getPositon(self):

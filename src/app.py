@@ -1,42 +1,41 @@
-import logging
 import sys
 
 from controlDevice import ControlDevice
 from client import Client
-
-logging.basicConfig(level=logging.DEBUG)
+from logger import initLogger
 
 
 class App:
     """
     RC Mission Operator application.
     """
-
-    STEERING_TYPE = ControlDevice.TYPE_SERVO
-    STEERING_FREQ = 180
-    STEERING_GPIO = ControlDevice.CHANNEL_0
-    STEERING_MIN = 1.0
-    STEERING_MAX = 2.0
-    STEERING_NEUTRAL = 1.5
+    PWM_FREQ = 180
+    STEERING_TYPE = ControlDevice.TYPE_DIRECT
+    STEERING_MIN = ControlDevice.MIN_ROTATION
+    STEERING_MAX = ControlDevice.MAX_ROTATION
+    STEERING_NEUTRAL = ControlDevice.DEFAULT_CENTER
 
     THROTTLE_TYPE = ControlDevice.TYPE_ESC
-    THROTTLE_FREQ = 90
-    THROTTLE_GPIO = ControlDevice.CHANNEL_1
-    THROTTLE_MIN = 1.1
-    THROTTLE_MAX = 4.9
-    THROTTLE_NEUTRAL = 1.5
+    THROTTLE_MIN = ControlDevice.MIN_ROTATION
+    THROTTLE_MAX = ControlDevice.MAX_ROTATION
+    THROTTLE_NEUTRAL = ControlDevice.DEFAULT_CENTER
 
     def __init__(self):
         """
         Constructor.
         """
-        self._steering = ControlDevice(self.STEERING_TYPE, self.STEERING_GPIO,
-                                       self.STEERING_FREQ, self.STEERING_MIN,
-                                       self.STEERING_MAX,  self.STEERING_NEUTRAL)   # noqa: E501
+        logger = initLogger()
+        self._logger = logger.getLogger('APP')
 
-        self._throttle = ControlDevice(self.THROTTLE_TYPE, self.THROTTLE_GPIO,
-                                       self.THROTTLE_FREQ, self.THROTTLE_MIN,
-                                       self.THROTTLE_MAX,  self.THROTTLE_NEUTRAL)   # noqa: E501
+        ControlDevice.initServoKit()
+        self._steering = ControlDevice(logger, self.STEERING_TYPE,
+                                       (self.STEERING_MIN,
+                                        self.STEERING_NEUTRAL,
+                                        self.STEERING_MAX))
+        self._throttle = ControlDevice(logger, self.THROTTLE_TYPE,
+                                       (self.THROTTLE_MIN,
+                                        self.THROTTLE_MAX,
+                                        self.THROTTLE_NEUTRAL))
 
         self._client = Client('12345')
 
@@ -44,7 +43,7 @@ class App:
         """
         Main application loop.
         """
-        logging.info('starting RC control mission operator')
+        self._logger.info('starting RC control mission operator')
         while True:
             pass
 
@@ -52,7 +51,7 @@ class App:
         """
         Stop the application.
         """
-        logging.info('stopping RC control mission operator')
+        self._logger.info('stopping RC control mission operator')
         self._steering.stop_pulse()
         self._throttle.stop_pulse()
         self._client.disconnect()
