@@ -3,7 +3,7 @@
 omit =
     */site-packages/*
     */distutils/*
-    test/*
+    tests/*
 
 [report]
 exclude_lines =
