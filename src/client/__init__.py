@@ -1,5 +1,3 @@
-import logging
-
 import paho.mqtt.client as mqtt
 
 from .messages import UnitConnectionState
@@ -11,14 +9,15 @@ class Client(mqtt.Client):
     """
     CLIENT_ID = 'operator-f1'
 
-    def __init__(self, password):
+    def __init__(self, logger: object, password):
         """
         The mission commander mqtt client constructor.
 
         Params:
             password:       The client password creds.
         """
-        logging.debug('initializing mqtt client')
+        self._logger = logger.getLogger(f"{self.CLIENT_ID.upper()}")
+        self._logger.debug('initializing mqtt client')
         super().__init__(client_id=self.CLIENT_ID, transport='tcp')
         stateMsgPayload = \
             {UnitConnectionState.STATE_KEY: UnitConnectionState.OFFLINE_STATE}
@@ -29,7 +28,7 @@ class Client(mqtt.Client):
                       qos=self._stateMsg.get_qos(), retain=True)
         self.username_pw_set(self.CLIENT_ID, password)
 
-        logging.info('trying to connect to mission broker')
+        self._logger.info('trying to connect to mission broker')
         self.connect('192.168.1.132', 1883)
         self.loop_start()
 
@@ -43,7 +42,7 @@ class Client(mqtt.Client):
             flags:          The response flags from the broker.
             rc:             The connection results.
         """
-        logging.info('connected to mission broker.')
+        self._logger.info('connected to mission broker.')
         payload = \
             {UnitConnectionState.STATE_KEY: UnitConnectionState.ONLINE_STATE}
         self._stateMsg.set_payload(payload)
@@ -60,7 +59,7 @@ class Client(mqtt.Client):
             usrData:        Private user data if set.
             rc:             The connection results.
         """
-        logging.info('disconnected from mission broker.')
+        self._logger.info('disconnected from mission broker.')
         self.loop_stop()
 
     def on_message(self, client, usrData, msg):
@@ -73,7 +72,7 @@ class Client(mqtt.Client):
             msg:            The message recived.
         """
         receivedMsg = msg.payload.decode('utf-8')
-        logging.info(f"message received: {receivedMsg}")
+        self._logger.info(f"message received: {receivedMsg}")
         # TODO: handle messages.
 
     def on_publish(self, client, usrData, mid):
@@ -85,7 +84,7 @@ class Client(mqtt.Client):
             usrData         Private user data if set.
             mid:            The message ID.
         """
-        logging.debug(f"message published: mid {mid}")
+        self._logger.debug(f"message published: mid {mid}")
 
     def on_subscribe(self, client, usrData, mid, granted_qos):
         """
@@ -97,14 +96,14 @@ class Client(mqtt.Client):
             mid:            The message ID.
             granted_qos:    The granted quality of service.
         """
-        logging.debug(f"subscription done with mid: "
-                      f"{mid}; and qos: {granted_qos}")
+        self._logger.debug(f"subscription done with mid: "
+                           f"{mid}; and qos: {granted_qos}")
 
     def disconnect(self):
         """
         Disconnect the client from the broker.
         """
-        logging.info('disconnecting from mission broker.')
+        self._logger.info('disconnecting from mission broker.')
         payload = \
             {UnitConnectionState.STATE_KEY: UnitConnectionState.OFFLINE_STATE}
         self._stateMsg.set_payload(payload)

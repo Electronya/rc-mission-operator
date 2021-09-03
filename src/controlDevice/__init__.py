@@ -9,9 +9,9 @@ class ControlDevice:
     """
     RC control device base class.
     """
-    TYPE_SERVO = 'servo'
+    TYPE_DIRECT = 'direction'
     TYPE_ESC = 'esc'
-    CHANNELS = {'servo': 0, 'esc': 1}
+    CHANNELS = {'direction': 0, 'esc': 1}
     MIN_ROTATION = 0
     DEFAULT_CENTER = 90
     MAX_ROTATION = 180
@@ -38,9 +38,11 @@ class ControlDevice:
         """
         cls.servos = ServoKit(channels=chanCount, frequency=frequency)
 
-    def __init__(self, servoType='servo', motionRange=(MIN_ROTATION,
-                                                       DEFAULT_CENTER,
-                                                       MAX_ROTATION)):
+    def __init__(self, logger: object,
+                 servoType: str = TYPE_DIRECT,
+                 motionRange: tuple = (MIN_ROTATION,
+                                       DEFAULT_CENTER,
+                                       MAX_ROTATION)):
         """
         Constructor.
 
@@ -49,12 +51,14 @@ class ControlDevice:
             motionRange:    The motion range of the device.
                             Default: (0, 90, 180).
         """
+        self._logger = logger.getLogger(f"{servoType.upper()}")
         if self.servos is None:
             raise ServoKitUninitialized()
-        if servoType != self.TYPE_SERVO and servoType != self.TYPE_ESC:
+        if servoType != self.TYPE_DIRECT and servoType != self.TYPE_ESC:
             raise ControlDeviceType(servoType)
 
         self._validateMotionRange(motionRange)
+        self._logger.info(f"creating device with motion range: {motionRange}")
         self._type = servoType
         self._min, self._center, self._max = motionRange
         self.servos[self.CHANNELS[self._type]].angle = self._center
@@ -92,6 +96,7 @@ class ControlDevice:
             motionRange:    The new motion range.
         """
         self._validateMotionRange(motionRange)
+        self._logger.debug(f"updating motion range to: {motionRange}")
         self._min, self._center, self._max = motionRange
 
     def getMotionRange(self) -> tuple:
@@ -111,6 +116,7 @@ class ControlDevice:
             pos:    The new position.
         """
         self._validatePosition(pos)
+        self._logger.debug(f"updatingposition to: {pos}")
         self.servos[self.CHANNELS[self._type]].angle = pos
 
     def getPosition(self) -> int:
