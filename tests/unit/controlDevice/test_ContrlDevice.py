@@ -6,8 +6,6 @@ import os
 import sys
 
 sys.path.append(os.path.abspath('./src'))
-mockedServoKit = Mock()
-sys.modules['adafruit_servokit'] = mockedServoKit
 
 from controlDevice import ControlDevice           # noqa: E402
 from controlDevice.exceptions import ServoKitUninitialized, \
@@ -25,9 +23,10 @@ class TestControlDevice(TestCase):
         """
         self.mockedServo = Mock(angle=ControlDevice.MIN_ROTATION)
         self.mockedEsc = Mock(angle=ControlDevice.MAX_ROTATION)
-        mockedServoKit.ServoKit.return_value = \
-            [self.mockedServo, self.mockedEsc]
-        ControlDevice.initServoKit()
+        self.mockedServos = [self.mockedServo, self.mockedEsc]
+        mockedServoKit = Mock()
+        mockedServoKit.return_value = self.mockedServos
+        ControlDevice.initServoKit(mockedServoKit)
         self.ctrlDev = ControlDevice(logging)
 
     def test_initServoKit(self):
@@ -37,15 +36,18 @@ class TestControlDevice(TestCase):
         """
         expectedChan = 8
         expectedFreq = 90
-        ControlDevice.initServoKit()
-        mockedServoKit.ServoKit.assert_called_with(channels=expectedChan,
-                                                   frequency=expectedFreq)
+        mockedServoKit = Mock()
+        mockedServoKit.return_value = self.mockedServos
+        ControlDevice.initServoKit(mockedServoKit)
+        mockedServoKit.assert_called_with(channels=expectedChan,
+                                          frequency=expectedFreq)
         expectedChan = 16
         expectedFreq = 50
-        ControlDevice.initServoKit(chanCount=expectedChan,
+        ControlDevice.initServoKit(mockedServoKit,
+                                   chanCount=expectedChan,
                                    frequency=expectedFreq)
-        mockedServoKit.ServoKit.assert_called_with(channels=expectedChan,
-                                                   frequency=expectedFreq)
+        mockedServoKit.assert_called_with(channels=expectedChan,
+                                          frequency=expectedFreq)
 
     def test_constructorServoUninitialized(self):
         """
