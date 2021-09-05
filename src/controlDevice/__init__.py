@@ -1,5 +1,5 @@
 from adafruit_servokit import ServoKit
-from exceptions import ContrelDevicePositionRange, \
+from .exceptions import ContrelDevicePositionRange, \
     ControlDeviceMotionRangeInvalid, \
     ControlDeviceType, \
     ServoKitUninitialized
