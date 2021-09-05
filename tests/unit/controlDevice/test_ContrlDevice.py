@@ -10,8 +10,9 @@ mockedServoKit = Mock()
 sys.modules['adafruit_servokit'] = mockedServoKit
 
 from controlDevice import ControlDevice           # noqa: E402
-from exceptions import ServoKitUninitialized, ControlDeviceType, \
-    ControlDeviceMotionRangeInvalid, ContrelDevicePositionRange  # noqa: E402
+from controlDevice.exceptions import ServoKitUninitialized, \
+    ControlDeviceType, ControlDeviceMotionRangeInvalid, \
+    ContrelDevicePositionRange  # noqa: E402
 
 
 class TestControlDevice(TestCase):
