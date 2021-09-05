@@ -11,4 +11,5 @@ cd rc-mission-operator
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-ln -s ../rc-mission-common/src src/common
+ln -s ../rc-mission-common/src/messages src/messages
+ln -s ../rc-mission-common/src/mqttClient src/mqttClient
