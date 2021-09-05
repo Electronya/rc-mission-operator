@@ -1,4 +1,3 @@
-from adafruit_servokit import ServoKit
 from .exceptions import ContrelDevicePositionRange, \
     ControlDeviceMotionRangeInvalid, \
     ControlDeviceType, \
@@ -27,8 +26,9 @@ class ControlDevice:
     servos = None
 
     @classmethod
-    def initServoKit(cls, chanCount=SUPPORTED_CHAN_CNT[0],
-                     frequency=DEFAULT_FREQ) -> None:
+    def initServoKit(cls, adafruitServoKit: object,
+                     chanCount: int = SUPPORTED_CHAN_CNT[0],
+                     frequency: int = DEFAULT_FREQ) -> None:
         """
         Intialize the servo kit.
 
@@ -36,7 +36,7 @@ class ControlDevice:
             chanCount:  The number of channel in the servo kit. Default 8.
             frequency:  The desired frequency.
         """
-        cls.servos = ServoKit(channels=chanCount, frequency=frequency)
+        cls.servos = adafruitServoKit(channels=chanCount, frequency=frequency)
 
     def __init__(self, logger: object,
                  servoType: str = TYPE_DIRECT,
