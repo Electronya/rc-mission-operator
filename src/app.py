@@ -1,7 +1,7 @@
 import sys
 
 from controlDevice import ControlDevice
-from client import Client
+from common import mqttClient as client
 from logger import initLogger
 
 
@@ -20,6 +20,8 @@ class App:
     THROTTLE_MAX = ControlDevice.MAX_ROTATION
     THROTTLE_NEUTRAL = ControlDevice.DEFAULT_CENTER
 
+    CLIENT_ID = 'f1-operator'
+
     def __init__(self):
         """
         Constructor.
@@ -37,7 +39,7 @@ class App:
                                         self.THROTTLE_MAX,
                                         self.THROTTLE_NEUTRAL))
 
-        self._client = Client('12345')
+        client.init(logger, self.CLIENT_ID, '12345')
 
     def run(self):
         """
@@ -54,7 +56,7 @@ class App:
         self._logger.info('stopping RC control mission operator')
         self._steering.stop_pulse()
         self._throttle.stop_pulse()
-        self._client.disconnect()
+        client.disconnect()
 
 
 if __name__ == '__main__':
