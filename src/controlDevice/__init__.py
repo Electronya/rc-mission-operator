@@ -108,16 +108,22 @@ class ControlDevice:
         """
         return (self._min, self._center, self._max)
 
-    def setPosition(self, pos: int) -> None:
+    def modifyPosition(self, modifier: float) -> None:
         """
         Set a new position.
 
         Params:
-            pos:    The new position.
+            modifier:    The position modifier.
         """
-        self._validatePosition(pos)
-        self._logger.debug(f"updatingposition to: {pos}")
-        self.servos[self.CHANNELS[self._type]].angle = pos
+        workingRange = None
+        if modifier < 0:
+            workingRange = self._center - self._min
+        if modifier > 0:
+            workingRange = self._max - self._center
+        newPos = int(self._center + (workingRange * modifier))
+        self._validatePosition(newPos)
+        self._logger.debug(f"updatingposition to: {newPos}")
+        self.servos[self.CHANNELS[self._type]].angle = newPos
 
     def getPosition(self) -> int:
         """

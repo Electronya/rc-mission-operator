@@ -227,30 +227,33 @@ class TestControlDevice(TestCase):
         testResult = self.ctrlDev.getMotionRange()
         self.assertEqual(testResult, testRange)
 
-    def test_setPositionValidate(self):
+    def test_modifyPositionValidate(self):
         """
-        The setPosition method must validate the new position.
+        The modifyPosition method must validate the new position.
         """
-        testPositon = 100
+        testModifier = 0.5
+        expectedPosition = 90 + (90 * testModifier)
         with patch.object(self.ctrlDev, '_validatePosition') \
                 as mockedValPosition:
-            self.ctrlDev.setPosition(testPositon)
-            mockedValPosition.assert_called_once_with(testPositon)
+            self.ctrlDev.modifyPosition(testModifier)
+            mockedValPosition.assert_called_once_with(expectedPosition)
 
-    def test_setPositionUpdateServo(self):
+    def test_modifyPositionUpdateServo(self):
         """
-        The setPosition method must update the servo position.
+        The modifyPosition method must update the servo position.
         """
-        testPositon = 100
-        self.ctrlDev.setPosition(testPositon)
+        testModifier = 0.5
+        expectedPosition = 90 + (90 * testModifier)
+        self.ctrlDev.modifyPosition(testModifier)
         testResult = self.ctrlDev.servos[ControlDevice.CHANNELS[ControlDevice.TYPE_DIRECT]].angle      # noqa: E501
-        self.assertEqual(testResult, testPositon)
+        self.assertEqual(testResult, expectedPosition)
 
     def test_getPositon(self):
         """
         The getPosition method must return the current position.
         """
-        testPosition = 100
-        self.ctrlDev.setPosition(testPosition)
+        testModifier = 0.5
+        expectedPosition = 90 + (90 * testModifier)
+        self.ctrlDev.modifyPosition(testModifier)
         testResult = self.ctrlDev.getPosition()
-        self.assertEqual(testResult, testPosition)
+        self.assertEqual(testResult, expectedPosition)
