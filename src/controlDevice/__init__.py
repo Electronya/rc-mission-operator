@@ -61,6 +61,7 @@ class ControlDevice:
         self._logger.info(f"creating device with motion range: {motionRange}")
         self._type = servoType
         self._min, self._center, self._max = motionRange
+        self._modifier = 0.0
         self.servos[self.CHANNELS[self._type]].angle = self._center
 
     def _validateMotionRange(self, motionRange: tuple) -> None:
@@ -108,6 +109,15 @@ class ControlDevice:
         """
         return (self._min, self._center, self._max)
 
+    def getModifier(self) -> float:
+        """
+        Get the current modifier.
+
+        Return:
+            The current modifier.
+        """
+        return self._modifier
+
     def modifyPosition(self, modifier: float) -> None:
         """
         Set a new position.
@@ -122,6 +132,7 @@ class ControlDevice:
             workingRange = self._max - self._center
         newPos = int(self._center + (workingRange * modifier))
         self._validatePosition(newPos)
+        self._modifier = modifier
         self._logger.debug(f"updatingposition to: {newPos}")
         self.servos[self.CHANNELS[self._type]].angle = newPos
 

@@ -106,6 +106,20 @@ class TestApp(TestCase):
         self.assertEqual(cxnStateMsg.getUnit(), app.CLIENT_ID)
         self.assertTrue(cxnStateMsg.isOnline())
 
+    def test__sendUnitState(self):
+        """
+        The _sendUnitState function must send the current unit state.
+        """
+        expectedSteeringMod = 0.45
+        expectedThrottleMod = -0.97
+        app.steering.getModifier.return_value = expectedSteeringMod
+        app.throttle.getModifier.return_value = expectedThrottleMod
+        app._sendUnitState()
+        unitStateMsg, = app.client.publish.call_args.args
+        self.assertEqual(unitStateMsg.getUnit(), app.CLIENT_ID)
+        self.assertEqual(unitStateMsg.getSteering(), expectedSteeringMod)
+        self.assertEqual(unitStateMsg.getThrottle(), expectedThrottleMod)
+
     def test_initControlDevices(self):
         """
         The init function must initialize the control devices.
@@ -157,6 +171,18 @@ class TestApp(TestCase):
             mockedInitLogger.return_value = mockedAppLogger
             app.init()
             mockedSendCxnState.assert_called_once()
+
+    def test_runSendUnitState(self):
+        """
+        The run function must send the unit current state.
+        """
+        with patch('app.time') as mockedTime, \
+                patch('app._sendUnitState') as mockedSendUnitState:
+            mockedTime.sleep.side_effect = Exception
+            try:
+                app.run()
+            except Exception:
+                mockedSendUnitState.assert_called_once()
 
     def test_runLoopPeriod(self):
         """

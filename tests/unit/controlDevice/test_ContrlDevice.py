@@ -229,6 +229,15 @@ class TestControlDevice(TestCase):
         testResult = self.ctrlDev.getMotionRange()
         self.assertEqual(testResult, testRange)
 
+    def test_getModifier(self):
+        """
+        The getModifier method must return the current modifier.
+        """
+        expectedModifier = 0.14
+        self.ctrlDev._modifier = expectedModifier
+        testResult = self.ctrlDev.getModifier()
+        self.assertEqual(testResult, expectedModifier)
+
     def test_modifyPositionValidate(self):
         """
         The modifyPosition method must validate the new position.

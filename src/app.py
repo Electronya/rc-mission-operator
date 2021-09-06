@@ -7,6 +7,7 @@ from messages.unitCxnStateMsg import UnitCxnStateMsg
 import mqttClient as client
 from messages.unitSteeringMsg import UnitSteeringMsg
 from messages.unitThrtlBrkMsg import UnitThrtlBrkMsg
+from messages.unitWhldStateMsg import UnitWhldStateMsg
 from logger import initLogger
 
 
@@ -111,6 +112,20 @@ def _sendCxnState() -> None:
     client.publish(cxnStateMsg)
 
 
+def _sendUnitState() -> None:
+    """
+    Send the unit state.
+    """
+    global logger
+    global steering
+    global throttle
+    unitStateMsg = UnitWhldStateMsg(CLIENT_ID)
+    unitStateMsg.setSteering(steering.getModifier())
+    unitStateMsg.setThrottle(throttle.getModifier())
+    logger.debug(f"sending unit state: {unitStateMsg.getPayload()}")
+    client.publish(unitStateMsg)
+
+
 def init() -> None:
     """
     App initialization.
@@ -133,6 +148,7 @@ def run() -> None:
     global throttle
     logger.info('starting RC control mission operator')
     while True:
+        _sendUnitState()
         time.sleep(STATE_UPDATE_PERIOD)
 
 
