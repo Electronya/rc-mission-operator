@@ -1,5 +1,6 @@
 from adafruit_servokit import ServoKit
 import sys
+import time
 
 from controlDevice import ControlDevice
 from messages.unitCxnStateMsg import UnitCxnStateMsg
@@ -23,6 +24,8 @@ THROTTLE_NEUTRAL = ControlDevice.DEFAULT_CENTER
 
 CLIENT_ID = 'f1-operator'
 CLIENT_PASSWORD = '12345'
+
+STATE_UPDATE_PERIOD = 0.025
 
 steering = None
 throttle = None
@@ -129,9 +132,8 @@ def run() -> None:
     global steering
     global throttle
     logger.info('starting RC control mission operator')
-    init()
     while True:
-        pass
+        time.sleep(STATE_UPDATE_PERIOD)
 
 
 def stop():
@@ -149,6 +151,7 @@ def stop():
 
 if __name__ == '__main__':
     try:
+        init()
         run()
     except KeyboardInterrupt:
         stop()

@@ -1,5 +1,6 @@
 import json
 from unittest import TestCase
+from unittest import mock
 from unittest.mock import Mock, call, patch
 
 import os
@@ -156,3 +157,14 @@ class TestApp(TestCase):
             mockedInitLogger.return_value = mockedAppLogger
             app.init()
             mockedSendCxnState.assert_called_once()
+
+    def test_runLoopPeriod(self):
+        """
+        The run function must loop based on the state update period.
+        """
+        with patch('app.time') as mockedTime:
+            mockedTime.sleep.side_effect = Exception
+            try:
+                app.run()
+            except Exception:
+                mockedTime.sleep.assert_called_once_with(app.STATE_UPDATE_PERIOD)   # noqa: E501
