@@ -8,6 +8,7 @@ from messages.unitThrtlBrkMsg import UnitThrtlBrkMsg
 from logger import initLogger
 
 
+PWM_CHAN_CNT = 16
 PWM_FREQ = 180
 STEERING_TYPE = ControlDevice.TYPE_DIRECT
 STEERING_MIN = ControlDevice.MIN_ROTATION
@@ -61,6 +62,40 @@ def _onThrottleMsg(client, usrData, msg) -> None:
     throttle.modifyPosition(throttleMsg.getAmplitude())
 
 
+def _initControlDevices(appLogger) -> None:
+    """
+    Initialize the control devices.
+
+    Params:
+        appLogger:  The appLogger.
+    """
+    global logger
+    global steering
+    global throttle
+    logger.info('initializing control devices')
+    ControlDevice.initServoKit(ServoKit, chanCount=PWM_CHAN_CNT,
+                               frequency=PWM_FREQ)
+    steering = ControlDevice(appLogger, STEERING_TYPE,
+                             (STEERING_MIN, STEERING_NEUTRAL, STEERING_MAX))
+    throttle = ControlDevice(appLogger, THROTTLE_TYPE,
+                             (THROTTLE_MIN, THROTTLE_NEUTRAL, THROTTLE_MAX))
+    logger.info('control devices initialized')
+
+
+def _initMqttClient(appLogger) -> None:
+    """
+    Initialize the MQTT client.
+    """
+    subs = (UnitSteeringMsg(CLIENT_ID).getTopic(),
+            UnitThrtlBrkMsg(CLIENT_ID).getTopic())
+    logger.info('initialize the MQTT client')
+    client.init(appLogger, CLIENT_ID, CLIENT_PASSWORD)
+    client.subscribe(subs)
+    client.registerMsgCallback(subs[0], _onSteeringMsg)
+    client.registerMsgCallback(subs[1], _onThrottleMsg)
+    logger.info('MQTT client initialized')
+
+
 def init() -> None:
     """
     App initialization.
@@ -71,21 +106,11 @@ def init() -> None:
 
     appLogger = initLogger()
     logger = appLogger.getLogger('APP')
-
-    logger.info('initializing control devices')
-    ControlDevice.initServoKit()
-    steering = ControlDevice(appLogger, STEERING_TYPE,
-                             (STEERING_MIN, STEERING_NEUTRAL, STEERING_MAX))
-    throttle = ControlDevice(appLogger, THROTTLE_TYPE,
-                             (THROTTLE_MIN, THROTTLE_MAX, THROTTLE_NEUTRAL))
-    logger.info('control devices initialized')
-
-    logger.info('initialize the MQTT client')
-    client.init(appLogger, CLIENT_ID, CLIENT_PASSWORD)
-    logger.info('MQTT client initialized')
+    _initControlDevices(appLogger)
+    _initMqttClient(appLogger)
 
 
-def run():
+def run() -> None:
     """
     Run the application.
     """
