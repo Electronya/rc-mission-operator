@@ -96,13 +96,23 @@ class TestApp(TestCase):
                          call(self.testSubs[1], app._onThrottleMsg)]
         app.client.registerMsgCallback.assert_has_calls(expectedCalls)
 
+    def test__sendCxnState(self):
+        """
+        The _sendCxnState function must send the online connection state.
+        """
+        app._sendCxnState()
+        cxnStateMsg, = app.client.publish.call_args.args
+        self.assertEqual(cxnStateMsg.getUnit(), app.CLIENT_ID)
+        self.assertTrue(cxnStateMsg.isOnline())
+
     def test_initControlDevices(self):
         """
         The init function must initialize the control devices.
         """
         with patch('app.initLogger') as mockedInitLogger, \
                 patch('app._initControlDevices') as mockedInitCtrlDev, \
-                patch('app._initMqttClient'):
+                patch('app._initMqttClient'), \
+                patch('app._sendCxnState'):
             mockedAppLogger = Mock()
             mockedInitLogger.return_value = mockedAppLogger
             app.init()
@@ -114,8 +124,35 @@ class TestApp(TestCase):
         """
         with patch('app.initLogger') as mockedInitLogger, \
                 patch('app._initControlDevices'), \
-                patch('app._initMqttClient') as mockedInitMqttClient:
+                patch('app._initMqttClient') as mockedInitMqttClient, \
+                patch('app._sendCxnState'):
             mockedAppLogger = Mock()
             mockedInitLogger.return_value = mockedAppLogger
             app.init()
             mockedInitMqttClient.assert_called_once_with(mockedAppLogger)
+
+    def test_initStartLoop(self):
+        """
+        The init function must start the client network loop.
+        """
+        with patch('app.initLogger') as mockedInitLogger, \
+                patch('app._initControlDevices'), \
+                patch('app._initMqttClient'), \
+                patch('app._sendCxnState'):
+            mockedAppLogger = Mock()
+            mockedInitLogger.return_value = mockedAppLogger
+            app.init()
+            app.client.startLoop.assert_called_once()
+
+    def test_initSendCxnStateMsg(self):
+        """
+        The init function must notify its connection state.
+        """
+        with patch('app.initLogger') as mockedInitLogger, \
+                patch('app._initControlDevices'), \
+                patch('app._initMqttClient'), \
+                patch('app._sendCxnState') as mockedSendCxnState:
+            mockedAppLogger = Mock()
+            mockedInitLogger.return_value = mockedAppLogger
+            app.init()
+            mockedSendCxnState.assert_called_once()

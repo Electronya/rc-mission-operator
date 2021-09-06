@@ -2,6 +2,7 @@ from adafruit_servokit import ServoKit
 import sys
 
 from controlDevice import ControlDevice
+from messages.unitCxnStateMsg import UnitCxnStateMsg
 import mqttClient as client
 from messages.unitSteeringMsg import UnitSteeringMsg
 from messages.unitThrtlBrkMsg import UnitThrtlBrkMsg
@@ -86,6 +87,7 @@ def _initMqttClient(appLogger) -> None:
     """
     Initialize the MQTT client.
     """
+    global logger
     subs = (UnitSteeringMsg(CLIENT_ID).getTopic(),
             UnitThrtlBrkMsg(CLIENT_ID).getTopic())
     logger.info('initialize the MQTT client')
@@ -96,18 +98,27 @@ def _initMqttClient(appLogger) -> None:
     logger.info('MQTT client initialized')
 
 
+def _sendCxnState() -> None:
+    """
+    Send the connection state message.
+    """
+    global logger
+    cxnStateMsg = UnitCxnStateMsg(CLIENT_ID)
+    cxnStateMsg.setAsOnline()
+    client.publish(cxnStateMsg)
+
+
 def init() -> None:
     """
     App initialization.
     """
     global logger
-    global steering
-    global throttle
-
     appLogger = initLogger()
     logger = appLogger.getLogger('APP')
     _initControlDevices(appLogger)
     _initMqttClient(appLogger)
+    client.startLoop()
+    _sendCxnState()
 
 
 def run() -> None:
