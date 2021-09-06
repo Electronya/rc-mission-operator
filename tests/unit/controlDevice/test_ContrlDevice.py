@@ -253,11 +253,12 @@ class TestControlDevice(TestCase):
         """
         The modifyPosition method must update the servo position.
         """
-        testModifier = 0.5
-        expectedPosition = 90 + (90 * testModifier)
-        self.ctrlDev.modifyPosition(testModifier)
-        testResult = self.ctrlDev.servos[ControlDevice.CHANNELS[ControlDevice.TYPE_DIRECT]].angle      # noqa: E501
-        self.assertEqual(testResult, expectedPosition)
+        testModifiers = [0.5, -0.25]
+        for testModifier in testModifiers:
+            expectedPosition = int(90 + (90 * testModifier))
+            self.ctrlDev.modifyPosition(testModifier)
+            testResult = self.ctrlDev.servos[ControlDevice.CHANNELS[ControlDevice.TYPE_DIRECT]].angle      # noqa: E501
+            self.assertEqual(testResult, expectedPosition)
 
     def test_getPositon(self):
         """
