@@ -259,3 +259,13 @@ class TestControlDevice(TestCase):
         self.ctrlDev.modifyPosition(testModifier)
         testResult = self.ctrlDev.getPosition()
         self.assertEqual(testResult, expectedPosition)
+
+    def test_setToNeutral(self):
+        """
+        The setToNeutral method must set the servo to the central position.
+        """
+        testModifier = 0.5
+        self.ctrlDev.modifyPosition(testModifier)
+        self.ctrlDev.setToNeutral()
+        testResult = self.ctrlDev.getPosition()
+        self.assertEqual(testResult, self.ctrlDev._center)

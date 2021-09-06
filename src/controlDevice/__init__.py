@@ -133,3 +133,9 @@ class ControlDevice:
             The current position.
         """
         return self.servos[self.CHANNELS[self._type]].angle
+
+    def setToNeutral(self) -> None:
+        """
+        Set to neutral position (center).
+        """
+        self.servos[self.CHANNELS[self._type]].angle = self._center
