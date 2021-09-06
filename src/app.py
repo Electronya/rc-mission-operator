@@ -144,8 +144,8 @@ def stop():
     global steering
     global throttle
     logger.info('stopping RC control mission operator')
-    steering.stop_pulse()
-    throttle.stop_pulse()
+    steering.setToNeutral()
+    throttle.setToNeutral()
     client.disconnect()
 
 

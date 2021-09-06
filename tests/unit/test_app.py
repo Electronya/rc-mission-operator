@@ -168,3 +168,18 @@ class TestApp(TestCase):
                 app.run()
             except Exception:
                 mockedTime.sleep.assert_called_once_with(app.STATE_UPDATE_PERIOD)   # noqa: E501
+
+    def test_stopSetControlDevicesToNeutral(self):
+        """
+        The stop function must set to neutral the control devices.
+        """
+        app.stop()
+        app.steering.setToNeutral.assert_called_once()
+        app.throttle.setToNeutral.assert_called_once()
+
+    def test_stopDisconnectClient(self):
+        """
+        The stop function must disconnect the MQTT client.
+        """
+        app.stop()
+        app.client.disconnect.assert_called_once()
