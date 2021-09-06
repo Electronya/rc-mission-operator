@@ -21,7 +21,7 @@ jobs:
         submodules: recursive
     - name: Link common
       run: |
-        ls .
+        ls ./rc-mission-common
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
