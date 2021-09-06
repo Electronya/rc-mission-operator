@@ -1,6 +1,5 @@
 import json
 from unittest import TestCase
-from unittest import mock
 from unittest.mock import Mock, call, patch
 
 import os
