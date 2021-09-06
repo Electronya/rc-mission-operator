@@ -169,6 +169,7 @@ if __name__ == '__main__':
     try:
         init()
         run()
-    except KeyboardInterrupt:
+    except Exception as e:
+        logger.error(e)
         stop()
         sys.exit(0)
