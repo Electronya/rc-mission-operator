@@ -1,4 +1,3 @@
-from adafruit_servokit import ServoKit
 from .exceptions import ContrelDevicePositionRange, \
     ControlDeviceMotionRangeInvalid, \
     ControlDeviceType, \
@@ -27,8 +26,9 @@ class ControlDevice:
     servos = None
 
     @classmethod
-    def initServoKit(cls, chanCount=SUPPORTED_CHAN_CNT[0],
-                     frequency=DEFAULT_FREQ) -> None:
+    def initServoKit(cls, adafruitServoKit: object,
+                     chanCount: int = SUPPORTED_CHAN_CNT[0],
+                     frequency: int = DEFAULT_FREQ) -> None:
         """
         Intialize the servo kit.
 
@@ -36,7 +36,7 @@ class ControlDevice:
             chanCount:  The number of channel in the servo kit. Default 8.
             frequency:  The desired frequency.
         """
-        cls.servos = ServoKit(channels=chanCount, frequency=frequency)
+        cls.servos = adafruitServoKit(channels=chanCount, frequency=frequency)
 
     def __init__(self, logger: object,
                  servoType: str = TYPE_DIRECT,
@@ -61,6 +61,7 @@ class ControlDevice:
         self._logger.info(f"creating device with motion range: {motionRange}")
         self._type = servoType
         self._min, self._center, self._max = motionRange
+        self._modifier = 0.0
         self.servos[self.CHANNELS[self._type]].angle = self._center
 
     def _validateMotionRange(self, motionRange: tuple) -> None:
@@ -108,16 +109,32 @@ class ControlDevice:
         """
         return (self._min, self._center, self._max)
 
-    def setPosition(self, pos: int) -> None:
+    def getModifier(self) -> float:
+        """
+        Get the current modifier.
+
+        Return:
+            The current modifier.
+        """
+        return self._modifier
+
+    def modifyPosition(self, modifier: float) -> None:
         """
         Set a new position.
 
         Params:
-            pos:    The new position.
+            modifier:    The position modifier.
         """
-        self._validatePosition(pos)
-        self._logger.debug(f"updatingposition to: {pos}")
-        self.servos[self.CHANNELS[self._type]].angle = pos
+        workingRange = None
+        if modifier < 0:
+            workingRange = self._center - self._min
+        if modifier > 0:
+            workingRange = self._max - self._center
+        newPos = int(self._center + (workingRange * modifier))
+        self._validatePosition(newPos)
+        self._modifier = modifier
+        self._logger.debug(f"updatingposition to: {newPos}")
+        self.servos[self.CHANNELS[self._type]].angle = newPos
 
     def getPosition(self) -> int:
         """
@@ -127,3 +144,9 @@ class ControlDevice:
             The current position.
         """
         return self.servos[self.CHANNELS[self._type]].angle
+
+    def setToNeutral(self) -> None:
+        """
+        Set to neutral position (center).
+        """
+        self.servos[self.CHANNELS[self._type]].angle = self._center

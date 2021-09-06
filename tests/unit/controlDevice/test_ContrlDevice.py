@@ -6,8 +6,6 @@ import os
 import sys
 
 sys.path.append(os.path.abspath('./src'))
-mockedServoKit = Mock()
-sys.modules['adafruit_servokit'] = mockedServoKit
 
 from controlDevice import ControlDevice           # noqa: E402
 from controlDevice.exceptions import ServoKitUninitialized, \
@@ -25,9 +23,10 @@ class TestControlDevice(TestCase):
         """
         self.mockedServo = Mock(angle=ControlDevice.MIN_ROTATION)
         self.mockedEsc = Mock(angle=ControlDevice.MAX_ROTATION)
-        mockedServoKit.ServoKit.return_value = \
-            [self.mockedServo, self.mockedEsc]
-        ControlDevice.initServoKit()
+        self.mockedServos = [self.mockedServo, self.mockedEsc]
+        mockedServoKit = Mock()
+        mockedServoKit.return_value = self.mockedServos
+        ControlDevice.initServoKit(mockedServoKit)
         self.ctrlDev = ControlDevice(logging)
 
     def test_initServoKit(self):
@@ -37,15 +36,18 @@ class TestControlDevice(TestCase):
         """
         expectedChan = 8
         expectedFreq = 90
-        ControlDevice.initServoKit()
-        mockedServoKit.ServoKit.assert_called_with(channels=expectedChan,
-                                                   frequency=expectedFreq)
+        mockedServoKit = Mock()
+        mockedServoKit.return_value = self.mockedServos
+        ControlDevice.initServoKit(mockedServoKit)
+        mockedServoKit.assert_called_with(channels=expectedChan,
+                                          frequency=expectedFreq)
         expectedChan = 16
         expectedFreq = 50
-        ControlDevice.initServoKit(chanCount=expectedChan,
+        ControlDevice.initServoKit(mockedServoKit,
+                                   chanCount=expectedChan,
                                    frequency=expectedFreq)
-        mockedServoKit.ServoKit.assert_called_with(channels=expectedChan,
-                                                   frequency=expectedFreq)
+        mockedServoKit.assert_called_with(channels=expectedChan,
+                                          frequency=expectedFreq)
 
     def test_constructorServoUninitialized(self):
         """
@@ -227,30 +229,53 @@ class TestControlDevice(TestCase):
         testResult = self.ctrlDev.getMotionRange()
         self.assertEqual(testResult, testRange)
 
-    def test_setPositionValidate(self):
+    def test_getModifier(self):
         """
-        The setPosition method must validate the new position.
+        The getModifier method must return the current modifier.
         """
-        testPositon = 100
+        expectedModifier = 0.14
+        self.ctrlDev._modifier = expectedModifier
+        testResult = self.ctrlDev.getModifier()
+        self.assertEqual(testResult, expectedModifier)
+
+    def test_modifyPositionValidate(self):
+        """
+        The modifyPosition method must validate the new position.
+        """
+        testModifier = 0.5
+        expectedPosition = 90 + (90 * testModifier)
         with patch.object(self.ctrlDev, '_validatePosition') \
                 as mockedValPosition:
-            self.ctrlDev.setPosition(testPositon)
-            mockedValPosition.assert_called_once_with(testPositon)
+            self.ctrlDev.modifyPosition(testModifier)
+            mockedValPosition.assert_called_once_with(expectedPosition)
 
-    def test_setPositionUpdateServo(self):
+    def test_modifyPositionUpdateServo(self):
         """
-        The setPosition method must update the servo position.
+        The modifyPosition method must update the servo position.
         """
-        testPositon = 100
-        self.ctrlDev.setPosition(testPositon)
-        testResult = self.ctrlDev.servos[ControlDevice.CHANNELS[ControlDevice.TYPE_DIRECT]].angle      # noqa: E501
-        self.assertEqual(testResult, testPositon)
+        testModifiers = [0.5, -0.25]
+        for testModifier in testModifiers:
+            expectedPosition = int(90 + (90 * testModifier))
+            self.ctrlDev.modifyPosition(testModifier)
+            testResult = self.ctrlDev.servos[ControlDevice.CHANNELS[ControlDevice.TYPE_DIRECT]].angle      # noqa: E501
+            self.assertEqual(testResult, expectedPosition)
 
     def test_getPositon(self):
         """
         The getPosition method must return the current position.
         """
-        testPosition = 100
-        self.ctrlDev.setPosition(testPosition)
+        testModifier = 0.5
+        expectedPosition = 90 + (90 * testModifier)
+        self.ctrlDev.modifyPosition(testModifier)
         testResult = self.ctrlDev.getPosition()
-        self.assertEqual(testResult, testPosition)
+        self.assertEqual(testResult, expectedPosition)
+
+    def test_setToNeutral(self):
+        """
+        The setToNeutral method must set the servo to the central position.
+        """
+        testModifier = 0.5
+        self.ctrlDev.modifyPosition(testModifier)
+        self.ctrlDev.setToNeutral()
+        testResult = self.ctrlDev.getPosition()
+        self.assertEqual(testResult, self.ctrlDev._center)
