@@ -25,29 +25,30 @@ class TestApp(TestCase):
         app.steering = Mock()
         app.throttle = Mock()
         app.ControlDevice.servos = [Mock(), Mock()]
-        self.testSubs = (app.UnitSteeringMsg(app.CLIENT_ID).getTopic(),
-                         app.UnitThrtlBrkMsg(app.CLIENT_ID).getTopic())
+        self.testSubs = (app.UnitWhldCmdMsg(app.CLIENT_ID).getTopic())
 
-    def test_onSteeringMsg(self):
+    def test_onCommandMsgSteering(self):
         """
-        The _onSteeringMsg function must modify the steering position
+        The _onCommandMsg function must modify the steering position
         based on the received message.
         """
         expectedModifier = 0.25
-        steeringMsg = json.dumps({'unit id': 'test unit',
-                                  'payload': {'angle': expectedModifier}})
-        app._onSteeringMsg(None, None, steeringMsg)
+        commandMsg = json.dumps({'unit id': 'test unit',
+                                 'payload': {'steering': expectedModifier,
+                                             'throttle': -0.45}})
+        app._onCommandMsg(None, None, commandMsg)
         app.steering.modifyPosition.assert_called_once_with(expectedModifier)
 
-    def test_onThrottleMsg(self):
+    def test_onCommandMsgThrottle(self):
         """
-        The _onThrottleMsg function must modify the throttle position
+        The _onCommandMsg function must modify the throttle position
         based on the received message.
         """
         expectedModifier = -0.90
         throttleMsg = json.dumps({'unit id': 'test unit',
-                                  'payload': {'amplitude': expectedModifier}})
-        app._onThrottleMsg(None, None, throttleMsg)
+                                  'payload': {'steering': -0.23,
+                                              'throttle': expectedModifier}})
+        app._onCommandMsg(None, None, throttleMsg)
         app.throttle.modifyPosition.assert_called_once_with(expectedModifier)
 
     def test__initControlDevice(self):
@@ -92,8 +93,7 @@ class TestApp(TestCase):
         """
         mockedAppLogger = Mock()
         app._initMqttClient(mockedAppLogger)
-        expectedCalls = [call(self.testSubs[0], app._onSteeringMsg),
-                         call(self.testSubs[1], app._onThrottleMsg)]
+        expectedCalls = [call(self.testSubs[0], app._onCommandMsg)]
         app.client.registerMsgCallback.assert_has_calls(expectedCalls)
 
     def test__sendCxnState(self):

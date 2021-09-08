@@ -2,12 +2,11 @@ from adafruit_servokit import ServoKit
 import sys
 import time
 
-from controlDevice import ControlDevice
-from messages.unitCxnStateMsg import UnitCxnStateMsg
-import mqttClient as client
-from messages.unitSteeringMsg import UnitSteeringMsg
-from messages.unitThrtlBrkMsg import UnitThrtlBrkMsg
-from messages.unitWhldStateMsg import UnitWhldStateMsg
+from pkgs.controlDevice import ControlDevice
+from pkgs.messages.unitCxnStateMsg import UnitCxnStateMsg
+from pkgs.messages.unitWhldCmdMsg import UnitWhldCmdMsg
+from pkgs.messages.unitWhldStateMsg import UnitWhldStateMsg
+import pkgs.mqttClient as client
 from logger import initLogger
 
 
@@ -33,9 +32,9 @@ throttle = None
 logger = None
 
 
-def _onSteeringMsg(client, usrData, msg) -> None:
+def _onCommandMsg(client, usrData, msg) -> None:
     """
-    The on steering message callback.
+    The on command message callback.
 
     Params:
         client:     The client instance.
@@ -44,27 +43,12 @@ def _onSteeringMsg(client, usrData, msg) -> None:
     """
     global logger
     global steering
-    logger.debug(f"received steering message: {msg}")
-    steeringMsg = UnitSteeringMsg(CLIENT_ID)
-    steeringMsg.fromJson(msg)
-    steering.modifyPosition(steeringMsg.getAngle())
-
-
-def _onThrottleMsg(client, usrData, msg) -> None:
-    """
-    The on throttle message callback.
-
-    Params:
-        client:     The client instance.
-        usrData:    The user data.
-        msg:        The received message.
-    """
-    global logger
     global throttle
-    logger.debug(f"received throttle message: {msg}")
-    throttleMsg = UnitThrtlBrkMsg(CLIENT_ID)
-    throttleMsg.fromJson(msg)
-    throttle.modifyPosition(throttleMsg.getAmplitude())
+    logger.debug(f"received command message: {msg}")
+    commandMsg = UnitWhldCmdMsg(CLIENT_ID)
+    commandMsg.fromJson(msg)
+    steering.modifyPosition(commandMsg.getSteering())
+    throttle.modifyPosition(commandMsg.getThrottle())
 
 
 def _initControlDevices(appLogger) -> None:
@@ -92,13 +76,11 @@ def _initMqttClient(appLogger) -> None:
     Initialize the MQTT client.
     """
     global logger
-    subs = (UnitSteeringMsg(CLIENT_ID).getTopic(),
-            UnitThrtlBrkMsg(CLIENT_ID).getTopic())
+    subs = (UnitWhldCmdMsg(CLIENT_ID).getTopic())
     logger.info('initialize the MQTT client')
     client.init(appLogger, CLIENT_ID, CLIENT_PASSWORD)
     client.subscribe(subs)
-    client.registerMsgCallback(subs[0], _onSteeringMsg)
-    client.registerMsgCallback(subs[1], _onThrottleMsg)
+    client.registerMsgCallback(subs[0], _onCommandMsg)
     logger.info('MQTT client initialized')
 
 
