@@ -7,9 +7,9 @@ import sys
 
 sys.path.append(os.path.abspath('./src'))
 
-from controlDevice import ControlDevice           # noqa: E402
-from controlDevice.exceptions import ServoKitUninitialized, \
-    ControlDeviceType, ControlDeviceMotionRangeInvalid, \
+from pkgs.controlDevice import ControlDevice, \
+    ServoKitUninitialized, ControlDeviceType, \
+    ControlDeviceMotionRangeInvalid, \
     ContrelDevicePositionRange  # noqa: E402
 
 
