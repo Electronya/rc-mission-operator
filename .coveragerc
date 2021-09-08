@@ -4,8 +4,8 @@ omit =
     */site-packages/*
     */distutils/*
     tests/*
-    src/messages/*
-    src/mqttClient/*
+    src/pkgs/messages/*
+    src/pkgs/mqttClient/*
 
 [report]
 exclude_lines =
