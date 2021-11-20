@@ -2,7 +2,7 @@ import logging
 import os
 
 
-def initLogger():
+def initLogger() -> object:
     """
     Initialize the logger.
     """
