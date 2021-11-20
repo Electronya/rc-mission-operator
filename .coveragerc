@@ -1,0 +1,12 @@
+# .coveragerc to control coverage.py
+[run]
+omit =
+    */site-packages/*
+    */distutils/*
+    tests/*
+    src/pkgs/messages/*
+    src/pkgs/mqttClient/*
+
+[report]
+exclude_lines =
+    if __name__ == .__main__.:
