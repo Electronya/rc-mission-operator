@@ -3,9 +3,9 @@ import sys
 import time
 
 from pkgs.controlDevice import ControlDevice
-from pkgs.messages.unitCxnStateMsg import UnitCxnStateMsg
-from pkgs.messages.unitWhldCmdMsg import UnitWhldCmdMsg
-from pkgs.messages.unitWhldStateMsg import UnitWhldStateMsg
+from pkgs.messages import UnitCxnStateMsg
+from pkgs.messages import UnitWhldCmdMsg
+from pkgs.messages import UnitWhldStateMsg
 import pkgs.mqttClient as client
 from logger import initLogger
 
